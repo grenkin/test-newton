@@ -1,6 +1,5 @@
 // FreeFem++ code
 
-/*
 // физические параметры (тест 1)
 real Tmax = 773;
 real StBol = 5.67e-8;
@@ -13,8 +12,8 @@ real b = 4 * StBol * Tmax ^ 3 * refr ^ 2;
 real beta = 10;
 real gamma = 0.3;
 real L = 0.25; // сторона квадрата
-*/
 
+/*
 // физические параметры (тест 2)
 real Tmax = 773;
 real StBol = 5.67e-8;
@@ -27,6 +26,22 @@ real b = 4 * StBol * Tmax ^ 3 * refr ^ 2;
 real beta = 10;
 real gamma = 0.3;
 real L = 1; // сторона квадрата
+*/
+
+func real thetabfunc (real x1, real y1)
+{
+	if (x1 == 0 || x1 == L)
+		return 0.5 + 0.5 * y1 / L;
+	else if (y1 == 0)
+		return 0.5;
+	else if (y1 == L)
+		return 1;
+	else {
+		cout << "\nx1 = " << x1 << "  y1 = " << y1 << "\n";
+		assert(0);
+	}
+}
+func thetab = thetabfunc(x, y);
 
 int M = 300; // число подотрезков сетки
 int N = 10;  // число итераций контрольного счета
@@ -49,19 +64,15 @@ for (int iter = 1; iter <= N; iter++) {
     + int2d(Th)(kappaa * phi * v)
     - int2d(Th)(kappaa * 4 * theta0 ^ 3 * theta * v)
     + int2d(Th)(kappaa * 3 * theta0 ^ 4 * v)
-    + int1d(Th, 1, 2, 3, 4)(gamma * phi * v)
-    - int1d(Th, 1)(gamma * 0.5 ^ 4 * v)
-    - int1d(Th, 3)(gamma * 1 ^ 4 * v)
-    - int1d(Th, 2, 4)(gamma * (0.5 + y / (2 * L)) ^ 4 * v)
+    + int1d(Th)(gamma * phi * v)
+    - int1d(Th)(gamma * thetab ^ 4 * v)
     //...
     + int2d(Th)(a * Grad(theta)' * Grad(w))
     - int2d(Th)(b * kappaa * phi * w)
     + int2d(Th)(b * kappaa * 4 * theta0 ^ 3 * theta * w)
     - int2d(Th)(b * kappaa * 3 * theta0 ^ 4 * w)
-    + int1d(Th, 1, 2, 3, 4)(beta * theta * w)
-    - int1d(Th, 1)(beta * 0.5 * w);
-    - int1d(Th, 3)(beta * 1 * w);
-    - int1d(Th, 2, 4)(beta * (0.5 + y / (2 * L)) * w);
+    + int1d(Th)(beta * theta * w)
+    - int1d(Th)(beta * thetab * w);
 
   Vh tmp = abs(theta - theta0);
   cout << "iter = " << iter << "    diff = " << tmp[].max << endl;
@@ -79,19 +90,15 @@ for (int iter = 1; iter <= N1; iter++) {
     + int2d(Th)(kappaa * phi * v)
     - int2d(Th)(kappaa * 4 * theta0 ^ 3 * theta * v)
     + int2d(Th)(kappaa * 3 * theta0 ^ 4 * v)
-    + int1d(Th, 1, 2, 3, 4)(gamma * phi * v)
-    - int1d(Th, 1)(gamma * 0.5 ^ 4 * v)
-    - int1d(Th, 3)(gamma * 1 ^ 4 * v)
-    - int1d(Th, 2, 4)(gamma * (0.5 + y / (2 * L)) ^ 4 * v)
+    + int1d(Th)(gamma * phi * v)
+    - int1d(Th)(gamma * thetab ^ 4 * v)
     //...
     + int2d(Th)(a * Grad(theta)' * Grad(w))
     - int2d(Th)(b * kappaa * phi * w)
     + int2d(Th)(b * kappaa * 4 * theta0 ^ 3 * theta * w)
     - int2d(Th)(b * kappaa * 3 * theta0 ^ 4 * w)
-    + int1d(Th, 1, 2, 3, 4)(beta * theta * w)
-    - int1d(Th, 1)(beta * 0.5 * w);
-    - int1d(Th, 3)(beta * 1 * w);
-    - int1d(Th, 2, 4)(beta * (0.5 + y / (2 * L)) * w);
+    + int1d(Th)(beta * theta * w)
+    - int1d(Th)(beta * thetab * w);
 
   Vh tmp = abs(theta - exact);
   real diff = tmp[].max;
@@ -109,20 +116,16 @@ for (int iter = 1; iter <= N2; iter++) {
       int2d(Th)(alpha * Grad(phi)' * Grad(v))
     + int2d(Th)(kappaa * phi * v)
     - int2d(Th)(kappaa * theta0 ^ 4 * v)
-    + int1d(Th, 1, 2, 3, 4)(gamma * phi * v)
-    - int1d(Th, 1)(gamma * 0.5 ^ 4 * v)
-    - int1d(Th, 3)(gamma * 1 ^ 4 * v)
-    - int1d(Th, 2, 4)(gamma * (0.5 + y / (2 * L)) ^ 4 * v);
+    + int1d(Th)(gamma * phi * v)
+    - int1d(Th)(gamma * thetab ^ 4 * v);
 
   solve CalcTheta(theta, w) =
       int2d(Th)(a * Grad(theta)' * Grad(w))
     - int2d(Th)(b * kappaa * phi * w)
     + int2d(Th)(b * kappaa * 4 * theta0 ^ 3 * theta * w)
     - int2d(Th)(b * kappaa * 3 * theta0 ^ 4 * w)
-    + int1d(Th, 1, 2, 3, 4)(beta * theta * w)
-    - int1d(Th, 1)(beta * 0.5 * w);
-    - int1d(Th, 3)(beta * 1 * w);
-    - int1d(Th, 2, 4)(beta * (0.5 + y / (2 * L)) * w);
+    + int1d(Th)(beta * theta * w)
+    - int1d(Th)(beta * thetab * w);
 
   Vh tmp = abs(theta - exact);
   real diff = tmp[].max;
